@@ -651,7 +651,7 @@ const App = {
                                 <select required class="item-select flex-grow p-2 border rounded-lg text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white" onchange="app.updateOrderTotalPreview()">
                                     ${productOptions}
                                 </select>
-                                <input type="number" placeholder="Qty" required min="1" step="0.01" value="1" class="item-qty w-20 p-2 border rounded-lg text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white" oninput="app.updateOrderTotalPreview()">
+                                <input type="number" placeholder="Qty" required min="1" step="1" value="1" class="item-qty w-20 p-2 border rounded-lg text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white" oninput="app.updateOrderTotalPreview()">
                             </div>
                         </div>
                         <button type="button" onclick="app.addOrderItemRow()" class="text-primary text-sm mt-2 font-medium hover:underline dark:text-indigo-400"><i class="fas fa-plus"></i> Add another product</button>
@@ -686,7 +686,7 @@ const App = {
             <select required class="item-select flex-grow p-2 border rounded-lg text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white" onchange="app.updateOrderTotalPreview()">
                 ${productOptions}
             </select>
-            <input type="number" placeholder="Qty" required min="1" step="0.01" value="1" class="item-qty w-20 p-2 border rounded-lg text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white" oninput="app.updateOrderTotalPreview()">
+            <input type="number" placeholder="Qty" required min="1" step="1" value="1" class="item-qty w-20 p-2 border rounded-lg text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white" oninput="app.updateOrderTotalPreview()">
             <button type="button" onclick="this.parentElement.remove(); app.updateOrderTotalPreview();" class="text-danger p-2"><i class="fas fa-times"></i></button>
         `;
         container.appendChild(div);
@@ -699,7 +699,7 @@ const App = {
             const select = row.querySelector('.item-select');
             if (select.value) {
                 const product = JSON.parse(select.value);
-                const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
+                const qty = parseInt(row.querySelector('.item-qty').value, 10) || 0;
                 total += qty * product.price;
             }
         });
@@ -717,7 +717,7 @@ const App = {
             const select = row.querySelector('.item-select');
             if (select.value) {
                 const product = JSON.parse(select.value);
-                const qty = parseFloat(row.querySelector('.item-qty').value) || 1;
+                const qty = parseInt(row.querySelector('.item-qty').value, 10) || 1;
                 items.push({
                     name: product.name,
                     quantity: qty,
