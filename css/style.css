@@ -1,0 +1,59 @@
+/* Custom styles overriding or supplementing Tailwind */
+
+/* Safe area for mobile devices (like iPhone with notch) */
+.pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Hide scrollbar for clean UI but keep functionality */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.no-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
+/* Smooth view transitions */
+.view {
+    display: none;
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+.view.active-view {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Modal animations */
+.modal-overlay {
+    animation: fadeInBg 0.2s ease-out forwards;
+}
+
+.modal-content {
+    animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeInBg {
+    from { background-color: rgba(0, 0, 0, 0); }
+    to { background-color: rgba(0, 0, 0, 0.5); }
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(100px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Active navigation state for desktop */
+aside .nav-link.active {
+    background-color: #EEF2FF; /* Indigo 50 */
+    color: #4F46E5; /* Indigo 600 */
+}
+html.dark aside .nav-link.active {
+    background-color: #374151; /* Gray 700 */
+    color: #818CF8; /* Indigo 400 */
+}
