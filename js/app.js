@@ -604,14 +604,30 @@ const App = {
         const today = new Date().toISOString().split('T')[0];
         const products = Store.getProducts();
 
-        let productOptions = '<option value="">Select from catalog (optional)</option>';
+        if (products.length === 0) {
+             const html = `
+                <div class="p-6 text-center space-y-4">
+                    <i class="fas fa-box-open text-4xl text-gray-400 mb-2"></i>
+                    <h3 class="text-xl font-bold dark:text-white">Catalog is Empty</h3>
+                    <p class="text-gray-500 dark:text-gray-400 text-sm">You must add products to your catalog before you can record a debt.</p>
+                    <div class="flex justify-center space-x-2 mt-4">
+                        <button onclick="App.closeModal()" class="px-4 py-2 border rounded-lg dark:border-gray-600 dark:text-gray-300">Close</button>
+                        <button onclick="App.closeModal(); app.navigate('view-catalog')" class="px-4 py-2 bg-primary text-white rounded-lg shadow">Go to Catalog</button>
+                    </div>
+                </div>
+            `;
+            this.showModal(html);
+            return;
+        }
+
+        let productOptions = '<option value="" disabled selected>Select a product...</option>';
         products.forEach(p => {
             productOptions += `<option value='${JSON.stringify(p)}'>${p.name} - ${Store.formatMoney(p.price)}</option>`;
         });
 
         const html = `
             <div class="p-4 border-b dark:border-gray-700 flex justify-between items-center">
-                <h3 class="text-xl font-bold">Add Debt / Order</h3>
+                <h3 class="text-xl font-bold">Add Debt</h3>
                 <button onclick="App.closeModal()" class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"><i class="fas fa-times"></i></button>
             </div>
             <div class="p-4 space-y-4">
@@ -628,21 +644,17 @@ const App = {
                     </div>
 
                     <div class="mb-2">
-                        <label class="block text-sm font-medium mb-1 dark:text-gray-300 flex justify-between">
-                            Items
-                            <select onchange="app.addCatalogItemToOrder(this)" class="text-xs border rounded p-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white max-w-[150px]">
-                                ${productOptions}
-                            </select>
-                        </label>
+                        <label class="block text-sm font-medium mb-1 dark:text-gray-300">Items from Catalog</label>
                         <div id="order-items-container" class="space-y-2">
                             <!-- First Item -->
                             <div class="flex gap-2 items-start order-item-row">
-                                <input type="text" placeholder="Description" required class="item-name flex-grow p-2 border rounded-lg text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                                <input type="number" placeholder="Qty" required min="1" step="0.01" value="1" class="item-qty w-16 p-2 border rounded-lg text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white" oninput="app.updateOrderTotalPreview()">
-                                <input type="number" placeholder="Price" required min="0" step="0.01" class="item-price w-20 p-2 border rounded-lg text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white" oninput="app.updateOrderTotalPreview()">
+                                <select required class="item-select flex-grow p-2 border rounded-lg text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white" onchange="app.updateOrderTotalPreview()">
+                                    ${productOptions}
+                                </select>
+                                <input type="number" placeholder="Qty" required min="1" step="0.01" value="1" class="item-qty w-20 p-2 border rounded-lg text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white" oninput="app.updateOrderTotalPreview()">
                             </div>
                         </div>
-                        <button type="button" onclick="app.addOrderItemRow()" class="text-primary text-sm mt-2 font-medium hover:underline dark:text-indigo-400"><i class="fas fa-plus"></i> Add another item</button>
+                        <button type="button" onclick="app.addOrderItemRow()" class="text-primary text-sm mt-2 font-medium hover:underline dark:text-indigo-400"><i class="fas fa-plus"></i> Add another product</button>
                     </div>
 
                     <div class="flex justify-between items-center py-3 border-t border-b dark:border-gray-700 my-4">
@@ -652,7 +664,7 @@ const App = {
 
                     <div class="flex justify-end space-x-2">
                         <button type="button" onclick="App.closeModal()" class="px-4 py-2 border rounded-lg dark:border-gray-600 dark:text-gray-300">Cancel</button>
-                        <button type="submit" class="px-4 py-2 bg-primary text-white rounded-lg shadow">Save Order</button>
+                        <button type="submit" class="px-4 py-2 bg-primary text-white rounded-lg shadow">Save Debt</button>
                     </div>
                 </form>
             </div>
@@ -660,42 +672,21 @@ const App = {
         this.showModal(html);
     },
 
-    addCatalogItemToOrder(selectElement) {
-        if (!selectElement.value) return;
-        const product = JSON.parse(selectElement.value);
-
-        // Find empty row or add new
-        const rows = document.querySelectorAll('.order-item-row');
-        let targetRow = null;
-
-        for(let row of rows) {
-            if(!row.querySelector('.item-name').value && !row.querySelector('.item-price').value) {
-                targetRow = row;
-                break;
-            }
-        }
-
-        if (!targetRow) {
-            this.addOrderItemRow();
-            const newRows = document.querySelectorAll('.order-item-row');
-            targetRow = newRows[newRows.length - 1];
-        }
-
-        targetRow.querySelector('.item-name').value = product.name;
-        targetRow.querySelector('.item-price').value = product.price;
-
-        this.updateOrderTotalPreview();
-        selectElement.value = ""; // reset select
-    },
-
     addOrderItemRow() {
+        const products = Store.getProducts();
+        let productOptions = '<option value="" disabled selected>Select a product...</option>';
+        products.forEach(p => {
+            productOptions += `<option value='${JSON.stringify(p)}'>${p.name} - ${Store.formatMoney(p.price)}</option>`;
+        });
+
         const container = document.getElementById('order-items-container');
         const div = document.createElement('div');
         div.className = 'flex gap-2 items-start order-item-row mt-2';
         div.innerHTML = `
-            <input type="text" placeholder="Description" required class="item-name flex-grow p-2 border rounded-lg text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-            <input type="number" placeholder="Qty" required min="1" step="0.01" value="1" class="item-qty w-16 p-2 border rounded-lg text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white" oninput="app.updateOrderTotalPreview()">
-            <input type="number" placeholder="Price" required min="0" step="0.01" class="item-price w-20 p-2 border rounded-lg text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white" oninput="app.updateOrderTotalPreview()">
+            <select required class="item-select flex-grow p-2 border rounded-lg text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white" onchange="app.updateOrderTotalPreview()">
+                ${productOptions}
+            </select>
+            <input type="number" placeholder="Qty" required min="1" step="0.01" value="1" class="item-qty w-20 p-2 border rounded-lg text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white" oninput="app.updateOrderTotalPreview()">
             <button type="button" onclick="this.parentElement.remove(); app.updateOrderTotalPreview();" class="text-danger p-2"><i class="fas fa-times"></i></button>
         `;
         container.appendChild(div);
@@ -705,9 +696,12 @@ const App = {
         const rows = document.querySelectorAll('.order-item-row');
         let total = 0;
         rows.forEach(row => {
-            const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
-            const price = parseFloat(row.querySelector('.item-price').value) || 0;
-            total += qty * price;
+            const select = row.querySelector('.item-select');
+            if (select.value) {
+                const product = JSON.parse(select.value);
+                const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
+                total += qty * product.price;
+            }
         });
         document.getElementById('order-total-preview').innerText = Store.formatMoney(total);
     },
@@ -720,12 +714,22 @@ const App = {
         const rows = document.querySelectorAll('.order-item-row');
         const items = [];
         rows.forEach(row => {
-            items.push({
-                name: row.querySelector('.item-name').value.trim(),
-                quantity: parseFloat(row.querySelector('.item-qty').value),
-                price: parseFloat(row.querySelector('.item-price').value)
-            });
+            const select = row.querySelector('.item-select');
+            if (select.value) {
+                const product = JSON.parse(select.value);
+                const qty = parseFloat(row.querySelector('.item-qty').value) || 1;
+                items.push({
+                    name: product.name,
+                    quantity: qty,
+                    price: product.price
+                });
+            }
         });
+
+        if (items.length === 0) {
+            alert('Please select at least one product.');
+            return;
+        }
 
         const order = {
             id: Store.generateId(),
@@ -779,13 +783,9 @@ const App = {
                                 class="w-full pl-8 p-2 border rounded-lg focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                         </div>
                     </div>
-                    <div class="mb-3">
+                    <div class="mb-4">
                         <label class="block text-sm font-medium mb-1 dark:text-gray-300">Date *</label>
                         <input type="date" id="pay-date" required value="${today}" class="w-full p-2 border rounded-lg focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium mb-1 dark:text-gray-300">Note (Optional)</label>
-                        <input type="text" id="pay-note" placeholder="e.g. Cash, Bank Transfer" class="w-full p-2 border rounded-lg focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                     </div>
                     <div class="flex justify-end space-x-2">
                         <button type="button" onclick="App.closeModal()" class="px-4 py-2 border rounded-lg dark:border-gray-600 dark:text-gray-300">Cancel</button>
@@ -806,7 +806,7 @@ const App = {
             id: Store.generateId(),
             amount: parseFloat(document.getElementById('pay-amount').value),
             date: document.getElementById('pay-date').value,
-            note: document.getElementById('pay-note').value.trim()
+            note: ''
         };
 
         if (!customer.payments) customer.payments = [];

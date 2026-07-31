@@ -13,7 +13,8 @@ const Store = {
     // Default settings
     DEFAULT_SETTINGS: {
         currency: '$',
-        theme: 'light' // 'light' or 'dark'
+        theme: 'light', // 'light' or 'dark'
+        lastActiveMonth: '' // Tracks the last month the app was opened (YYYY-MM)
     },
 
     /**
@@ -28,6 +29,53 @@ const Store = {
         }
         if (!localStorage.getItem(this.KEYS.SETTINGS)) {
             localStorage.setItem(this.KEYS.SETTINGS, JSON.stringify(this.DEFAULT_SETTINGS));
+        }
+
+        this.checkMonthlyRollover();
+    },
+
+    /**
+     * Check if a new month has started. If so, reset all payments and fully-paid debts,
+     * and roll over any unpaid balances as a single new debt.
+     */
+    checkMonthlyRollover() {
+        const settings = this.getSettings();
+        const currentMonth = new Date().toISOString().substring(0, 7); // YYYY-MM
+
+        if (!settings.lastActiveMonth) {
+            settings.lastActiveMonth = currentMonth;
+            this.saveSettings(settings);
+            return;
+        }
+
+        if (settings.lastActiveMonth !== currentMonth) {
+            let customers = this.getCustomers();
+            customers.forEach(customer => {
+                const balance = this.getCustomerBalance(customer);
+
+                // Clear history for the new month
+                customer.orders = [];
+                customer.payments = [];
+
+                if (balance > 0) {
+                    // Carry over the outstanding debt
+                    customer.orders.push({
+                        id: this.generateId(),
+                        date: new Date().toISOString().split('T')[0],
+                        dueDate: null,
+                        items: [{
+                            name: `Previous Balance Rollover from ${settings.lastActiveMonth}`,
+                            quantity: 1,
+                            price: balance
+                        }]
+                    });
+                }
+            });
+
+            this.set(this.KEYS.CUSTOMERS, customers);
+
+            settings.lastActiveMonth = currentMonth;
+            this.saveSettings(settings);
         }
     },
 
