@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Debt & Late Payment Tracker</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4F46E5', // Indigo 600
+                        secondary: '#10B981', // Emerald 500
+                        danger: '#EF4444', // Red 500
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100 transition-colors duration-200 h-screen overflow-hidden flex flex-col md:flex-row">
+
+    <!-- Mobile Header -->
+    <header class="md:hidden bg-white dark:bg-gray-800 shadow-sm p-4 flex justify-between items-center z-10 shrink-0">
+        <h1 class="text-xl font-bold text-primary dark:text-indigo-400">Debt Tracker</h1>
+        <button id="theme-toggle-mobile" class="text-gray-500 dark:text-gray-400">
+            <i class="fas fa-moon dark:hidden"></i>
+            <i class="fas fa-sun hidden dark:block"></i>
+        </button>
+    </header>
+
+    <!-- Desktop Sidebar -->
+    <aside class="hidden md:flex flex-col w-64 bg-white dark:bg-gray-800 shadow-md z-10 shrink-0">
+        <div class="p-6 flex justify-between items-center border-b dark:border-gray-700">
+            <h1 class="text-2xl font-bold text-primary dark:text-indigo-400">Debt Tracker</h1>
+            <button id="theme-toggle-desktop" class="text-gray-500 dark:text-gray-400">
+                <i class="fas fa-moon dark:hidden"></i>
+                <i class="fas fa-sun hidden dark:block"></i>
+            </button>
+        </div>
+        <nav class="flex-1 p-4 space-y-2" id="desktop-nav">
+            <a href="#" data-target="view-dashboard" class="nav-link block p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium active"><i class="fas fa-chart-line w-6 text-center mr-2"></i> Dashboard</a>
+            <a href="#" data-target="view-customers" class="nav-link block p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium"><i class="fas fa-users w-6 text-center mr-2"></i> Customers</a>
+            <a href="#" data-target="view-catalog" class="nav-link block p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium"><i class="fas fa-box-open w-6 text-center mr-2"></i> Catalog</a>
+            <a href="#" data-target="view-settings" class="nav-link block p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium"><i class="fas fa-cog w-6 text-center mr-2"></i> Settings</a>
+        </nav>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 overflow-y-auto relative pb-16 md:pb-0" id="main-content">
+        <!-- Views will be injected or toggled here -->
+
+        <!-- View: Dashboard -->
+        <section id="view-dashboard" class="view p-4 md:p-6 active-view">
+            <h2 class="text-2xl font-bold mb-4">Dashboard</h2>
+            <!-- Content built by JS -->
+            <div id="dashboard-content"></div>
+        </section>
+
+        <!-- View: Customers -->
+        <section id="view-customers" class="view p-4 md:p-6 hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold">Customers</h2>
+                <button class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium shadow" onclick="app.showAddCustomerModal()"><i class="fas fa-plus mr-1"></i> Add</button>
+            </div>
+            <!-- Content built by JS -->
+            <div id="customers-content"></div>
+        </section>
+
+        <!-- View: Catalog -->
+        <section id="view-catalog" class="view p-4 md:p-6 hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold">Product Catalog</h2>
+                <button class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium shadow" onclick="app.showAddProductModal()"><i class="fas fa-plus mr-1"></i> Add</button>
+            </div>
+            <!-- Content built by JS -->
+            <div id="catalog-content"></div>
+        </section>
+
+        <!-- View: Settings -->
+        <section id="view-settings" class="view p-4 md:p-6 hidden">
+            <h2 class="text-2xl font-bold mb-4">Settings</h2>
+            <!-- Content built by JS -->
+            <div id="settings-content"></div>
+        </section>
+
+        <!-- View: Customer Details (Sub-view) -->
+        <section id="view-customer-details" class="view p-4 md:p-6 hidden bg-white dark:bg-gray-900 absolute inset-0 z-20">
+            <div class="flex items-center mb-4">
+                <button class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 mr-4 text-xl" onclick="app.navigate('view-customers')"><i class="fas fa-arrow-left"></i></button>
+                <h2 class="text-2xl font-bold" id="detail-customer-name">Customer Details</h2>
+            </div>
+            <div id="customer-details-content"></div>
+        </section>
+
+    </main>
+
+    <!-- Mobile Bottom Navigation -->
+    <nav class="md:hidden bg-white dark:bg-gray-800 border-t dark:border-gray-700 flex justify-around p-2 pb-safe absolute bottom-0 w-full z-10" id="mobile-nav">
+        <a href="#" data-target="view-dashboard" class="nav-link flex flex-col items-center p-2 text-primary dark:text-indigo-400">
+            <i class="fas fa-chart-line text-lg mb-1"></i>
+            <span class="text-xs font-medium">Home</span>
+        </a>
+        <a href="#" data-target="view-customers" class="nav-link flex flex-col items-center p-2 text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-indigo-400">
+            <i class="fas fa-users text-lg mb-1"></i>
+            <span class="text-xs font-medium">Clients</span>
+        </a>
+        <a href="#" data-target="view-catalog" class="nav-link flex flex-col items-center p-2 text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-indigo-400">
+            <i class="fas fa-box-open text-lg mb-1"></i>
+            <span class="text-xs font-medium">Catalog</span>
+        </a>
+        <a href="#" data-target="view-settings" class="nav-link flex flex-col items-center p-2 text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-indigo-400">
+            <i class="fas fa-cog text-lg mb-1"></i>
+            <span class="text-xs font-medium">Settings</span>
+        </a>
+    </nav>
+
+    <!-- Modals Container -->
+    <div id="modals-container"></div>
+
+    <!-- Scripts -->
+    <script src="js/store.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
