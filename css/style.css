@@ -50,10 +50,20 @@
 
 /* Active navigation state for desktop */
 aside .nav-link.active {
-    background-color: #EEF2FF; /* Indigo 50 */
-    color: #4F46E5; /* Indigo 600 */
+    background-color: #F1F5F9; /* Slate 100 */
+    color: #0F172A; /* Slate 900 */
 }
 html.dark aside .nav-link.active {
-    background-color: #374151; /* Gray 700 */
-    color: #818CF8; /* Indigo 400 */
+    background-color: #1E293B; /* Slate 800 */
+    color: #FFFFFF; /* White */
+}
+
+/* Custom shadow for sleek look */
+.shadow-sleek {
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+}
+
+/* Input styling base */
+.input-base {
+    @apply w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-900 transition-colors focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent dark:bg-slate-900/50 dark:border-slate-700 dark:text-white dark:focus:bg-slate-900 dark:focus:ring-slate-400 placeholder-slate-400;
 }
